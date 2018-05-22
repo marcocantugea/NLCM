@@ -1,0 +1,11 @@
+C:\Users\LM4PCVIT01\Desktop\NLCM\NLCM\bin\Release\NLCM.exe.config
+C:\Users\LM4PCVIT01\Desktop\NLCM\NLCM\bin\Release\NLCM.exe
+C:\Users\LM4PCVIT01\Desktop\NLCM\NLCM\bin\Release\NLCM.pdb
+C:\Users\LM4PCVIT01\Desktop\NLCM\NLCM\bin\Release\NLCM.xml
+C:\Users\LM4PCVIT01\Desktop\NLCM\NLCM\obj\Release\NLCM.MainForm.resources
+C:\Users\LM4PCVIT01\Desktop\NLCM\NLCM\obj\Release\NLCM.Resources.resources
+C:\Users\LM4PCVIT01\Desktop\NLCM\NLCM\obj\Release\NLCM.Runner.resources
+C:\Users\LM4PCVIT01\Desktop\NLCM\NLCM\obj\Release\NLCM.vbproj.GenerateResource.Cache
+C:\Users\LM4PCVIT01\Desktop\NLCM\NLCM\obj\Release\NLCM.exe
+C:\Users\LM4PCVIT01\Desktop\NLCM\NLCM\obj\Release\NLCM.xml
+C:\Users\LM4PCVIT01\Desktop\NLCM\NLCM\obj\Release\NLCM.pdb

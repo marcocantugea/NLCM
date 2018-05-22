@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "NLCM", "NLCM.vbproj", "{33B9AF43-AF51-4ACF-91E0-FB63D40D8A29}"
+EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "NLCM-Runner", "..\..\NLCM-Runner\WindowsApplication1\NLCM-Runner.vbproj", "{11C13F52-6414-4972-96B1-341CBD5783E3}"
+EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "NLCMMangerConsole", "..\NLCMManagerConsole\WindowsApplication1\NLCMMangerConsole.vbproj", "{DA773CE3-2199-487C-8AD9-BCFA2B534793}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{33B9AF43-AF51-4ACF-91E0-FB63D40D8A29}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{33B9AF43-AF51-4ACF-91E0-FB63D40D8A29}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{33B9AF43-AF51-4ACF-91E0-FB63D40D8A29}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{33B9AF43-AF51-4ACF-91E0-FB63D40D8A29}.Release|Any CPU.Build.0 = Release|Any CPU
+		{11C13F52-6414-4972-96B1-341CBD5783E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{11C13F52-6414-4972-96B1-341CBD5783E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{11C13F52-6414-4972-96B1-341CBD5783E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{11C13F52-6414-4972-96B1-341CBD5783E3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA773CE3-2199-487C-8AD9-BCFA2B534793}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA773CE3-2199-487C-8AD9-BCFA2B534793}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA773CE3-2199-487C-8AD9-BCFA2B534793}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA773CE3-2199-487C-8AD9-BCFA2B534793}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
