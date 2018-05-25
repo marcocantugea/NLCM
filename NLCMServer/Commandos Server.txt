@@ -1,0 +1,26 @@
+COMANDO AL NLCM
+
+Trama
+
+MON@192.168.45.6!20180524014100!50!5!LM4PCVIT01
+
+MON - Comando de monitoreo de PC agrega registro a la base de datos el registro separado por el signo ! y regresa un ACKCHG. para la fecha se maneja YYYYDDMMHHmmSS
+
+
+STA@192.168.45.6
+
+STA - Comando para saver si esta en coneccion la pc y regresa un ACK
+
+ONL@192.168.45.6!(OFF/ON)
+
+ONL - Commando para desactivar los dns del equipo remoto y regresa un ACKCHG
+
+MNT@192.168.45.6!(OFF/ON)
+
+MNT - Commando para desactivar el monitoreo de consumo y regresa un ACKCHG
+
+INT@192.168.45.6!4
+
+INT - Comando para activar el intervalo de captura de consumo ultimo numero setea el valor de intervalo y regresa un ACKCHG
+
+

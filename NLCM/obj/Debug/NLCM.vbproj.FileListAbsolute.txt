@@ -9,3 +9,14 @@ C:\Users\LM4PCVIT01\Desktop\NLCM\NLCM\obj\Debug\NLCM.vbproj.GenerateResource.Cac
 C:\Users\LM4PCVIT01\Desktop\NLCM\NLCM\obj\Debug\NLCM.exe
 C:\Users\LM4PCVIT01\Desktop\NLCM\NLCM\obj\Debug\NLCM.xml
 C:\Users\LM4PCVIT01\Desktop\NLCM\NLCM\obj\Debug\NLCM.pdb
+C:\Users\LM4PCVIT01\Desktop\NLCM-ggithub\NLCM\NLCM\bin\Debug\NLCM.exe.config
+C:\Users\LM4PCVIT01\Desktop\NLCM-ggithub\NLCM\NLCM\bin\Debug\NLCM.exe
+C:\Users\LM4PCVIT01\Desktop\NLCM-ggithub\NLCM\NLCM\bin\Debug\NLCM.pdb
+C:\Users\LM4PCVIT01\Desktop\NLCM-ggithub\NLCM\NLCM\bin\Debug\NLCM.xml
+C:\Users\LM4PCVIT01\Desktop\NLCM-ggithub\NLCM\NLCM\obj\Debug\NLCM.MainForm.resources
+C:\Users\LM4PCVIT01\Desktop\NLCM-ggithub\NLCM\NLCM\obj\Debug\NLCM.Resources.resources
+C:\Users\LM4PCVIT01\Desktop\NLCM-ggithub\NLCM\NLCM\obj\Debug\NLCM.Runner.resources
+C:\Users\LM4PCVIT01\Desktop\NLCM-ggithub\NLCM\NLCM\obj\Debug\NLCM.vbproj.GenerateResource.Cache
+C:\Users\LM4PCVIT01\Desktop\NLCM-ggithub\NLCM\NLCM\obj\Debug\NLCM.exe
+C:\Users\LM4PCVIT01\Desktop\NLCM-ggithub\NLCM\NLCM\obj\Debug\NLCM.xml
+C:\Users\LM4PCVIT01\Desktop\NLCM-ggithub\NLCM\NLCM\obj\Debug\NLCM.pdb

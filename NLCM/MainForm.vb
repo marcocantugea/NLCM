@@ -39,6 +39,14 @@ Public Class MainForm
     Dim _Adaptername As String
     Dim _appconfig As New AppConfigFileSettings
     Dim _localconnection As String = System.Configuration.ConfigurationSettings.AppSettings("online")
+    Dim _IPServer As String = "127.0.0.1"
+
+    ''added 5/24/2018 ports and server
+    Dim _server As String = "127.0.0.1"
+    Dim _port1 As Integer = 8000
+    Dim _port2 As Integer = 8001
+    Dim _port3 As Integer = 8002
+    Dim _port4 As Integer = 8003
 
     Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
         Dim Config As New ConfigObj
@@ -67,6 +75,17 @@ Public Class MainForm
             value = False
         End If
 
+        'Load server parameters and ports
+        _server = System.Configuration.ConfigurationSettings.AppSettings("server")
+        Try
+            _port1 = Integer.Parse(System.Configuration.ConfigurationSettings.AppSettings("port-main"))
+            _port2 = Integer.Parse(System.Configuration.ConfigurationSettings.AppSettings("port-1"))
+            _port3 = Integer.Parse(System.Configuration.ConfigurationSettings.AppSettings("port-2"))
+            _port4 = Integer.Parse(System.Configuration.ConfigurationSettings.AppSettings("port-3"))
+        Catch ex As Exception
+
+        End Try
+
         'set timer to minutes
         _timer.Interval = 1000
         _timerInternetConnection.Interval = 180000
@@ -76,9 +95,28 @@ Public Class MainForm
 
         'initilizar monitor of network
         StartMonitor()
-        ''Label1.Text = "..."
+
+
+        'Send to server alive wake up
+        Try
+            SendCommandToServer("STA@" & getIPAddr(), _port1, _server)
+        Catch ex As Exception
+            Try
+                SendCommandToServer("STA@" & getIPAddr(), _port1, _server)
+            Catch ex1 As Exception
+                Try
+                    SendCommandToServer("STA@" & getIPAddr(), _port1, _server)
+                Catch ex2 As Exception
+                    Try
+                        SendCommandToServer("STA@" & getIPAddr(), _port1, _server)
+                    Catch ex3 As Exception
+                    End Try
+                End Try
+            End Try
+        End Try
 
         MyBase.SetVisibleCore(value)
+
     End Sub
 
     Private Sub MainForm_Load(sender As Object, e As EventArgs) Handles MyBase.Load
@@ -257,10 +295,44 @@ Public Class MainForm
 
         _intervalTimerTick = 0
 
+
         'Record on database
         Try
+
+            'Old code replaced to connect to server and save the info
             'save record in database
-            _ADO.RecordIP(_PCInfo)
+            '_ADO.RecordIP(_PCInfo)
+
+            'new code added 5/24/2018
+            Dim dateforcmd As String = _PCInfo.DATE_RECORD.ToString("yyyyMMddhhmmss")
+            Dim cmd_to_server As String = "MON@" & _PCInfo.IP_ADDRESS & "!" & dateforcmd & "!" & _PCInfo.MBCONSUMPTION_IN & "!" & _PCInfo.MBCONSUMPTION_OUT & "!" & _PCInfo.SESSIONUSERLOGED
+
+            Dim retry As Integer = 0
+            While retry <= 3
+                Try
+                    SendCommandToServer(cmd_to_server, _port1, _server)
+                    retry = 4
+                Catch ex As Exception
+                    Try
+                        SendCommandToServer(cmd_to_server, _port2, _server)
+                        retry = 4
+                    Catch ex1 As Exception
+                        Try
+                            SendCommandToServer(cmd_to_server, _port3, _server)
+                            retry = 4
+                        Catch ex2 As Exception
+                            Try
+                                SendCommandToServer(cmd_to_server, _port4, _server)
+                                retry = 4
+                            Catch ex3 As Exception
+                                retry += 1
+                            End Try
+                        End Try
+                    End Try
+                End Try
+
+            End While
+
             'check if the ip address if is registered on the table
             Dim chek_ip As Boolean = _ADO.CheckIPExist(_PCInfo.IP_ADDRESS)
             If Not chek_ip Then
@@ -273,6 +345,7 @@ Public Class MainForm
                 new_ipinfo.ACTIVE = True
                 new_ipinfo.Interval_REC = 1
                 new_ipinfo.ADAPTERNAME = _Adaptername
+                new_ipinfo.MACADDRESS = getMacAddress()
                 _ADO.RecordIPInfo(new_ipinfo)
             End If
             'Label1.Text = "State Saved."
@@ -471,6 +544,39 @@ Public Class MainForm
 
 #End Region
 
+    ''Added 22 May 2018
+    ''Adding functionality to run as server client
+    Public Function SendCommandToServer(cmd As String, port As Integer, server As String) As String
+        Dim _returndata As String
+        Dim tcpClient As New System.Net.Sockets.TcpClient()
+        tcpClient.Connect(server, port)
+        tcpClient.ReceiveBufferSize = 1024
+        Dim networkStream As NetworkStream = tcpClient.GetStream()
+        If networkStream.CanWrite And networkStream.CanRead Then
+
+            Dim sendBytes As [Byte]() = Encoding.ASCII.GetBytes(cmd)
+            networkStream.Write(sendBytes, 0, sendBytes.Length)
+
+
+            Dim bytes(tcpClient.ReceiveBufferSize) As Byte
+            networkStream.Read(bytes, 0, CInt(tcpClient.ReceiveBufferSize))
+
+            _returndata = Encoding.ASCII.GetString(bytes)
+            'Label1.Text = "Received  > " & _returndata & Environment.NewLine
+            'If _returndata.Equals("ACK") Then
+            tcpClient.Close()
+            'End If
+        Else
+            tcpClient.Close()
+        End If
+        Return _returndata
+    End Function
+
+    Function getMacAddress()
+        Dim nics() As NetworkInterface = NetworkInterface.GetAllNetworkInterfaces()
+        Return nics(0).GetPhysicalAddress.ToString
+    End Function
+
 
     Private Sub MainForm_FormClosing(sender As Object, e As FormClosingEventArgs) Handles MyBase.FormClosing
         _timer.Stop()
@@ -479,5 +585,6 @@ Public Class MainForm
         _timerInternetConnection = Nothing
         fNetworkInterfaces = Nothing
 
+        
     End Sub
 End Class
