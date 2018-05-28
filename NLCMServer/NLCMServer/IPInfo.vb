@@ -8,7 +8,16 @@
     Private _MONITOR As Boolean
     Private _Interval_REC As Integer
     Private _ADAPTERNAME As String
+    Private _MACADDRESS As String
 
+    Public Property MACADDRESS As String
+        Get
+            Return _MACADDRESS
+        End Get
+        Set(value As String)
+            _MACADDRESS = value
+        End Set
+    End Property
     Public Property ADAPTERNAME As String
         Get
             Return _ADAPTERNAME

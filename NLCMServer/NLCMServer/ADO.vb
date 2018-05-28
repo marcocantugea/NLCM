@@ -1,4 +1,6 @@
-﻿Public Class ADO
+﻿Imports System.Collections
+
+Public Class ADO
     Inherits com.data.OleDBConnectionObj
 
     Public Sub RecordIP(record As IPStatisticsObj)
@@ -175,5 +177,47 @@
             CloseDB()
         End Try
     End Sub
+
+    'Added 27 May 2018
+    'Get The IP Table on memory
+
+    Public Sub GetIPTable(table As Dictionary(Of String, IPInfo))
+        Try
+            OpenDB("DB-NLCMDB")
+            connection.Command = New OleDb.OleDbCommand("select * from IPTable", connection.Connection)
+            connection.Adap = New OleDb.OleDbDataAdapter(connection.Command)
+            Dim dts As New DataSet
+            connection.Adap.Fill(dts)
+
+            If dts.Tables.Count > 0 Then
+                If dts.Tables(0).Rows.Count > 0 Then
+                    For Each row As DataRow In dts.Tables(0).Rows
+                        Dim r_PCinfo As New IPInfo
+                        r_PCinfo.IDIP = row(0)
+                        r_PCinfo.IP_ADDRESS = row(1)
+                        r_PCinfo.LOCATION = row(2)
+                        r_PCinfo.ONLINE = row(3)
+                        r_PCinfo.ACTIVE = row(4)
+                        r_PCinfo.MONITOR = row(5)
+                        r_PCinfo.Interval_REC = row(6)
+                        r_PCinfo.ADAPTERNAME = row(7)
+                        r_PCinfo.MACADDRESS = row(8)
+                        Try
+                            table.Add(row(1), r_PCinfo)
+                        Catch ex As Exception
+
+                        End Try
+
+                    Next
+                End If
+            End If
+
+        Catch ex As Exception
+            Throw
+        Finally
+            CloseDB()
+        End Try
+    End Sub
+
 
 End Class

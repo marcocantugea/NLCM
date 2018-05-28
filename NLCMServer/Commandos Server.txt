@@ -23,4 +23,25 @@ INT@192.168.45.6!4
 
 INT - Comando para activar el intervalo de captura de consumo ultimo numero setea el valor de intervalo y regresa un ACKCHG
 
+ONLINE?@192.168.45.6
+
+ONLINE?- comando para ver si esta activada la opcion de online en la base de datos, Regresa : ACK@(1/0)
+1= YES
+0= NO
+
+INTERVAL?@192.168.45.6
+
+INTERVAL? - Comando para obtener el intervalo de captura de datos en el cliente
+
+MONITOR?@192.168.45.6
+INTERVAL? - Comando para ver si se activa el monitor de consumo.
+
+DEVADD@192.168.45.6!pending!(0/1)!(0/1)!(0/1)!1!Adaptername!0401505668
+
+DEVADD - Commando para agregar la IP A la tabla maestra de IPs
+
+IP?@192.168.45.6
+
+IP? - Revisa si la ip existe en la tabla de ip maestra
+
 

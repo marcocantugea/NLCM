@@ -7,8 +7,6 @@ Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "NLCM", "NLCM.vbproj", "{33B
 EndProject
 Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "NLCMMangerConsole", "..\NLCMManagerConsole\WindowsApplication1\NLCMMangerConsole.vbproj", "{DA773CE3-2199-487C-8AD9-BCFA2B534793}"
 EndProject
-Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "NLCMServer", "..\NLCMServer\NLCMServer\NLCMServer.vbproj", "{84842608-BF67-4589-A032-DE4BA5C024CF}"
-EndProject
 Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "NLCMDebugerClient", "..\NLCMDebugerClient\NLCMDebugerClient\NLCMDebugerClient.vbproj", "{47E2BAE2-AA90-41E0-85E3-864D67AB7C92}"
 EndProject
 Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "InstallerSilent", "..\NLCMInstallerSilent\InstallerSilent\InstallerSilent.vbproj", "{A97F8508-320F-46CE-A74E-1351CA413AD4}"
@@ -27,10 +25,6 @@ Global
 		{DA773CE3-2199-487C-8AD9-BCFA2B534793}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DA773CE3-2199-487C-8AD9-BCFA2B534793}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DA773CE3-2199-487C-8AD9-BCFA2B534793}.Release|Any CPU.Build.0 = Release|Any CPU
-		{84842608-BF67-4589-A032-DE4BA5C024CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{84842608-BF67-4589-A032-DE4BA5C024CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{84842608-BF67-4589-A032-DE4BA5C024CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{84842608-BF67-4589-A032-DE4BA5C024CF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{47E2BAE2-AA90-41E0-85E3-864D67AB7C92}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{47E2BAE2-AA90-41E0-85E3-864D67AB7C92}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{47E2BAE2-AA90-41E0-85E3-864D67AB7C92}.Release|Any CPU.ActiveCfg = Release|Any CPU

@@ -48,6 +48,13 @@ Public Class MainForm
     Dim _port3 As Integer = 8002
     Dim _port4 As Integer = 8003
 
+    'Added 26 may 2018
+    ' Fix performance to check the interval on the Server
+    Dim _intervaltoRecord As Long
+
+    'Added 27 May 2018
+    Private WithEvents _timer_maintenance As New Timer
+
     Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
         Dim Config As New ConfigObj
         Config.parameter = "-7"
@@ -69,6 +76,7 @@ Public Class MainForm
         ConnectInternet()
     End Sub
 
+    'Startup function
     Protected Overrides Sub SetVisibleCore(ByVal value As Boolean)
         If Not Me.IsHandleCreated Then
             Me.CreateHandle()
@@ -76,12 +84,12 @@ Public Class MainForm
         End If
 
         'Load server parameters and ports
-        _server = System.Configuration.ConfigurationSettings.AppSettings("server")
+        Me._server = System.Configuration.ConfigurationSettings.AppSettings("server")
         Try
-            _port1 = Integer.Parse(System.Configuration.ConfigurationSettings.AppSettings("port-main"))
-            _port2 = Integer.Parse(System.Configuration.ConfigurationSettings.AppSettings("port-1"))
-            _port3 = Integer.Parse(System.Configuration.ConfigurationSettings.AppSettings("port-2"))
-            _port4 = Integer.Parse(System.Configuration.ConfigurationSettings.AppSettings("port-3"))
+            Me._port1 = Integer.Parse(System.Configuration.ConfigurationSettings.AppSettings("port-main"))
+            Me._port2 = Integer.Parse(System.Configuration.ConfigurationSettings.AppSettings("port-1"))
+            Me._port3 = Integer.Parse(System.Configuration.ConfigurationSettings.AppSettings("port-2"))
+            Me._port4 = Integer.Parse(System.Configuration.ConfigurationSettings.AppSettings("port-3"))
         Catch ex As Exception
 
         End Try
@@ -96,24 +104,35 @@ Public Class MainForm
         'initilizar monitor of network
         StartMonitor()
 
+        'initiliza timer maintenance
+        _timer_maintenance.Interval = 30000
 
-        'Send to server alive wake up
+        Dim returnmsg As String = ""
+        Dim cmd As String = "STA@" & getIPAddr(), _port1, _server
+
         Try
-            SendCommandToServer("STA@" & getIPAddr(), _port1, _server)
+            'Send to server alive wake up
+            returnmsg = SendCommand(cmd)
+
+            'if is maintenance mode set maintenance mode on the app
+            If returnmsg.Contains("MAINTENANCEON!") Then
+                SetMaintenanceMode()
+            End If
+
+            'Added 28 may 2018
+            'added shutdown mode
+            If returnmsg.Contains("SHUTDOWN!") Then
+                SetShutDownMode()
+            End If
+
         Catch ex As Exception
-            Try
-                SendCommandToServer("STA@" & getIPAddr(), _port1, _server)
-            Catch ex1 As Exception
-                Try
-                    SendCommandToServer("STA@" & getIPAddr(), _port1, _server)
-                Catch ex2 As Exception
-                    Try
-                        SendCommandToServer("STA@" & getIPAddr(), _port1, _server)
-                    Catch ex3 As Exception
-                    End Try
-                End Try
-            End Try
+
         End Try
+
+        'Addded 26 may 2018
+        ' set the interval to start
+        'get the interval to save the record and convert into minutes
+        _intervaltoRecord = GetIntervalRecord() * 60
 
         MyBase.SetVisibleCore(value)
 
@@ -128,9 +147,9 @@ Public Class MainForm
     'main time ticker
     Private Sub TimerTick(sender As Object, e As EventArgs) Handles _timer.Tick
         'get the interval to save the record and convert into minutes
-        Dim intervaltoRecord As Long = GetIntervalRecord() * 60
+
         'checks if the timer meets the interval configured in the app.conf
-        If _intervalTimerTick = intervaltoRecord Then
+        If _intervalTimerTick = _intervaltoRecord Then
             ''Label1.Text = "entro"
             'Set tie interval to 0
             _intervalTimerTick = 0
@@ -140,6 +159,8 @@ Public Class MainForm
             If _EnableMonitor Then
                 CloseEverything(Nothing, Nothing)
             End If
+            'get the interval 
+            _intervaltoRecord = GetIntervalRecord() * 60
 
         Else
             If _intervalTimerTick = 30 Then
@@ -155,7 +176,40 @@ Public Class MainForm
         'Get the database online configuration
         Dim online As Boolean
         Try
-            online = _ADO.GetOnlineParameter(getIPAddr)
+            ''modified 5 may 2018
+            '' check on server the paramerter online
+            'online = _ADO.GetOnlineParameter(getIPAddr)
+
+            Dim cmd As String = "ONLINE?@" & getIPAddr()
+            Dim returnmsg As String
+
+            Try
+                returnmsg = SendCommand(cmd)
+                'if is maintenance mode set maintenance mode on the app
+                If returnmsg.Contains("MAINTENANCEON!") Then
+                    SetMaintenanceMode()
+                End If
+
+                'Added 28 may 2018
+                'added shutdown mode
+                If returnmsg.Contains("SHUTDOWN!") Then
+                    SetShutDownMode()
+                End If
+
+                If Not returnmsg.Equals("") Then
+                    If returnmsg.Contains("@") Then
+                        Dim args() As String = returnmsg.Split("@")
+                        If args.Length = 2 Then
+                            Dim response As Integer = Integer.Parse(args(1))
+                            online = response
+                        End If
+                    End If
+                End If
+            Catch ex As Exception
+
+            End Try
+
+
         Catch ex As Exception
             ''TODO: lOG
             ''TODO: REMOVE HARD CODE
@@ -193,30 +247,71 @@ Public Class MainForm
     Private Function GetIntervalRecord() As Long
         ' variable tu return
         Dim IntervalRecord As Long = 0
+
+        'Modified 26 may 2018
+        ' Remove consulting DB
         'get the configuration from the database
-        Dim _ADO_IntervalRec As Integer
+        'Dim _ADO_IntervalRec As Integer
+        'Try
+        '    _ADO_IntervalRec = _ADO.GetIntervalRec(getIPAddr)
+        'Catch ex As Exception
+        '    ''TODO: Log
+        '    ''TODO : Remove hard corde
+        '    _ADO_IntervalRec = 1
+        'End Try
+
+        'Added function to ask to the server the parameters
+        Dim cmd As String = "INTERVAL?@" & getIPAddr()
+        Dim returnmsg As String = ""
+
+
         Try
-            _ADO_IntervalRec = _ADO.GetIntervalRec(getIPAddr)
-        Catch ex As Exception
-            ''TODO: Log
-            ''TODO : Remove hard corde
-            _ADO_IntervalRec = 1
-        End Try
-        'if the database configuration is set will set the return variable
-        If _ADO_IntervalRec > 0 Then
-            IntervalRecord = _ADO_IntervalRec
-        Else
-            'if the variable is not set will take the app.config to setup the interval record
-            ' the configuration variable is Interval-Rec 
-            Dim Setting_intervalrecord As String = System.Configuration.ConfigurationSettings.AppSettings("Interval-Rec")
-            If Not IsNothing(Setting_intervalrecord) Then
-                Try
-                    IntervalRecord = Long.Parse(Setting_intervalrecord)
-                Catch ex As Exception
-                    IntervalRecord = 5
-                End Try
+            returnmsg = SendCommand(cmd)
+
+            'if is maintenance mode set maintenance mode on the app
+            If returnmsg.Contains("MAINTENANCEON!") Then
+                SetMaintenanceMode()
             End If
-        End If
+
+            'Added 28 may 2018
+            'added shutdown mode
+            If returnmsg.Contains("SHUTDOWN!") Then
+                SetShutDownMode()
+            End If
+
+            If Not returnmsg.Equals("") Then
+                If returnmsg.Contains("@") Then
+                    Dim args() As String = returnmsg.Split("@")
+                    If args.Length = 2 Then
+                        Dim response As Integer = 0
+                        Try
+                            response = Integer.Parse(args(1))
+                            IntervalRecord = response
+                        Catch ex As Exception
+                            Dim Setting_intervalrecord As String = System.Configuration.ConfigurationSettings.AppSettings("Interval-Rec")
+                            If Not IsNothing(Setting_intervalrecord) Then
+                                Try
+                                    IntervalRecord = Long.Parse(Setting_intervalrecord)
+                                Catch ex1 As Exception
+                                    IntervalRecord = 5
+                                End Try
+                            End If
+                        End Try
+                    End If
+                End If
+            End If
+        Catch ex As Exception
+
+        End Try
+
+        'if the database configuration is set will set the return variable
+        'If _ADO_IntervalRec > 0 Then
+        '    IntervalRecord = _ADO_IntervalRec
+        'Else
+        'if the variable is not set will take the app.config to setup the interval record
+        ' the configuration variable is Interval-Rec 
+
+        'End If
 
 
         Return IntervalRecord
@@ -224,13 +319,47 @@ Public Class MainForm
 
     'function to check the parameter MONITOR in the database to record the consumption
     Private Sub CheckMonitoringEngine()
+        'Modified remove the database check the server to get the parameter
         'get the ip adress for check the parameter monitor on the database
-        Dim checkmonitor As Boolean = _ADO.CheckmMonitorIsEnable(getIPAddr)
-        If Not checkmonitor Then
-            _EnableMonitor = False
-        Else
-            _EnableMonitor = True
-        End If
+
+        'Dim checkmonitor As Boolean = _ADO.CheckmMonitorIsEnable(getIPAddr)
+        'If Not checkmonitor Then
+        '    _EnableMonitor = False
+        'Else
+        '    _EnableMonitor = True
+        'End If
+
+        Dim cmd As String = "MONITOR?@" & getIPAddr()
+        Dim returnmsg As String = ""
+        Try
+            returnmsg = SendCommand(cmd)
+
+            'if is maintenance mode set maintenance mode on the app
+            If returnmsg.Contains("MAINTENANCEON!") Then
+                SetMaintenanceMode()
+            End If
+
+            'Added 28 may 2018
+            'added shutdown mode
+            If returnmsg.Contains("SHUTDOWN!") Then
+                SetShutDownMode()
+            End If
+
+            If Not returnmsg.Equals("") Then
+                If returnmsg.Contains("@") Then
+                    Dim args() As String = returnmsg.Split("@")
+                    If args.Length = 2 Then
+                        Dim enablemonitor As Boolean
+                        enablemonitor = Integer.Parse(args(1))
+                        _EnableMonitor = enablemonitor
+                    End If
+                End If
+            End If
+        Catch ex As Exception
+
+        End Try
+
+
     End Sub
 
     'function to get the actual ip address of the host
@@ -306,35 +435,88 @@ Public Class MainForm
             'new code added 5/24/2018
             Dim dateforcmd As String = _PCInfo.DATE_RECORD.ToString("yyyyMMddhhmmss")
             Dim cmd_to_server As String = "MON@" & _PCInfo.IP_ADDRESS & "!" & dateforcmd & "!" & _PCInfo.MBCONSUMPTION_IN & "!" & _PCInfo.MBCONSUMPTION_OUT & "!" & _PCInfo.SESSIONUSERLOGED
-
             Dim retry As Integer = 0
             While retry <= 3
+                Dim returnmsg As String = ""
                 Try
-                    SendCommandToServer(cmd_to_server, _port1, _server)
+                    returnmsg = SendCommand(cmd_to_server)
+                    'if is maintenance mode set maintenance mode on the app
+                    If returnmsg.Contains("MAINTENANCEON!") Then
+                        SetMaintenanceMode()
+                    End If
+
+                    'Added 28 may 2018
+                    'added shutdown mode
+                    If returnmsg.Contains("SHUTDOWN!") Then
+                        SetShutDownMode()
+                    End If
+
                     retry = 4
                 Catch ex As Exception
-                    Try
-                        SendCommandToServer(cmd_to_server, _port2, _server)
-                        retry = 4
-                    Catch ex1 As Exception
-                        Try
-                            SendCommandToServer(cmd_to_server, _port3, _server)
-                            retry = 4
-                        Catch ex2 As Exception
-                            Try
-                                SendCommandToServer(cmd_to_server, _port4, _server)
-                                retry = 4
-                            Catch ex3 As Exception
-                                retry += 1
-                            End Try
-                        End Try
-                    End Try
+                    retry += 1
                 End Try
+
+
+                'Try
+                '    SendCommandToServer(cmd_to_server, _port1, _server)
+                '    retry = 4
+                'Catch ex As Exception
+                '    Try
+                '        SendCommandToServer(cmd_to_server, _port2, _server)
+                '        retry = 4
+                '    Catch ex1 As Exception
+                '        Try
+                '            SendCommandToServer(cmd_to_server, _port3, _server)
+                '            retry = 4
+                '        Catch ex2 As Exception
+                '            Try
+                '                SendCommandToServer(cmd_to_server, _port4, _server)
+                '                retry = 4
+                '            Catch ex3 As Exception
+                '                retry += 1
+                '            End Try
+                '        End Try
+                '    End Try
+                'End Try
 
             End While
 
+            ''Modified 26 may 2018
+            '' remove to add directly to the data base
+            '' send command to the server
             'check if the ip address if is registered on the table
-            Dim chek_ip As Boolean = _ADO.CheckIPExist(_PCInfo.IP_ADDRESS)
+            ''Dim chek_ip As Boolean = _ADO.CheckIPExist(_PCInfo.IP_ADDRESS)
+            Dim chek_ip As Boolean = False
+            Dim cmd_checkip As String = "IP?@" & _PCInfo.IP_ADDRESS
+            Dim return_msg As String = ""
+            Try
+                return_msg = SendCommand(cmd_checkip)
+                'if is maintenance mode set maintenance mode on the app
+                If return_msg.Contains("MAINTENANCEON!") Then
+                    SetMaintenanceMode()
+                End If
+
+                'Added 28 may 2018
+                'added shutdown mode
+                If return_msg.Contains("SHUTDOWN!") Then
+                    SetShutDownMode()
+                End If
+
+                If Not return_msg.Equals("") Then
+                    If return_msg.Contains("@") Then
+                        Dim args() As String = return_msg.Split("@")
+                        If args.Length = 2 Then
+                            chek_ip = Integer.Parse(args(1))
+                        End If
+                    End If
+                End If
+            Catch ex As Exception
+
+            End Try
+
+
+
+
             If Not chek_ip Then
                 'fill new IPInfo object to default values and save it on the data base
                 Dim new_ipinfo As New IPInfo
@@ -346,7 +528,48 @@ Public Class MainForm
                 new_ipinfo.Interval_REC = 1
                 new_ipinfo.ADAPTERNAME = _Adaptername
                 new_ipinfo.MACADDRESS = getMacAddress()
-                _ADO.RecordIPInfo(new_ipinfo)
+
+                ''Modified 26 may 2018
+                '' remove to add directly to the data base
+                '' send command to the server
+                '_ADO.RecordIPInfo(new_ipinfo)
+                Dim cmd As String
+                Dim monitor As String = "0"
+                If new_ipinfo.MONITOR Then
+                    monitor = "1"
+
+                End If
+
+                Dim onlie As String = "0"
+                If new_ipinfo.ONLINE Then
+                    onlie = "1"
+                End If
+
+                Dim active As String = "0"
+                If new_ipinfo.ACTIVE Then
+                    active = "1"
+                End If
+
+                cmd = "DEVADD@" & new_ipinfo.IP_ADDRESS & "!" & new_ipinfo.LOCATION & "!" & monitor & "!" & onlie & "!" & active & "!" & new_ipinfo.Interval_REC.ToString & "!" & new_ipinfo.ADAPTERNAME & "!" & new_ipinfo.MACADDRESS
+                Dim returnmsg As String = ""
+                Try
+                    returnmsg = SendCommand(cmd)
+                    'if is maintenance mode set maintenance mode on the app
+                    If return_msg.Contains("MAINTENANCEON!") Then
+                        SetMaintenanceMode()
+                    End If
+
+                    'Added 28 may 2018
+                    'added shutdown mode
+                    If return_msg.Contains("SHUTDOWN!") Then
+                        SetShutDownMode()
+                    End If
+
+                Catch ex As Exception
+
+                End Try
+
+
             End If
             'Label1.Text = "State Saved."
         Catch ex As Exception
@@ -572,6 +795,31 @@ Public Class MainForm
         Return _returndata
     End Function
 
+    ''Added 27 May 2018
+    '' Send command in all ports
+    Public Function SendCommand(cmd As String) As String
+        Dim return_msg As String = ""
+        Try
+            return_msg = SendCommandToServer(cmd, _port1, _server)
+        Catch ex As Exception
+            Try
+                return_msg = SendCommandToServer(cmd, _port2, _server)
+            Catch ex1 As Exception
+                Try
+                    return_msg = SendCommandToServer(cmd, _port3, _server)
+                Catch ex2 As Exception
+                    Try
+                        return_msg = SendCommandToServer(cmd, _port4, _server)
+                    Catch ex3 As Exception
+                        'TODO:buffer to saved for latter
+                        Throw
+                    End Try
+                End Try
+            End Try
+        End Try
+        Return return_msg
+    End Function
+
     Function getMacAddress()
         Dim nics() As NetworkInterface = NetworkInterface.GetAllNetworkInterfaces()
         Return nics(0).GetPhysicalAddress.ToString
@@ -587,4 +835,39 @@ Public Class MainForm
 
         
     End Sub
+
+    'Added 27 May 2018
+    Private Sub SetMaintenanceMode()
+        _timer.Stop()
+        _timerInternetConnection.Stop()
+        _timer_maintenance.Start()
+    End Sub
+
+    Private Sub Timer_MaintenanceMode(sender As Object, e As EventArgs) Handles _timer_maintenance.Tick
+
+        Dim cmd As String = "STA@" & getIPAddr()
+        Dim returnmsg As String = ""
+        Try
+            returnmsg = SendCommand(cmd)
+            If returnmsg.Contains("ACK") Then
+                _timer_maintenance.Stop()
+                _timer.Start()
+                _timerInternetConnection.Start()
+            End If
+        Catch ex As Exception
+
+        End Try
+
+
+    End Sub
+
+    'Added 28 May 2018
+    ' Function to shutdown mode
+    Private Sub SetShutDownMode()
+        Application.Exit()
+        End
+
+    End Sub
+
+
 End Class
